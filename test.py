@@ -19,7 +19,7 @@ class MetricVariable(AbstractVariable):
         matches = cls._get_mask_matches(node.id)
 
         index = f'{matches[0]}'
-        getter_string = f'df[{index}]'  # Указываем текстовую ссылку на дата фрейм с данными.
+        getter_string = f'source[{index}]'  # Указываем текстовую ссылку на дата фрейм с данными.
 
         getter_tree = ast.parse(getter_string, mode='eval')  # Преобразуем в дерево.
 
@@ -39,7 +39,7 @@ class ConfigVariable(AbstractVariable):
         matches = cls._get_mask_matches(node.id)
 
         index = f'{matches[0]}'
-        getter_string = f'result_data[{index}]'  # Указываем текстовую ссылку на список с данными.
+        getter_string = f'config[{index}]'  # Указываем текстовую ссылку на список с данными.
 
         getter_tree = ast.parse(getter_string, mode='eval')  # Преобразуем в дерево.
 
@@ -72,8 +72,10 @@ parser = Parser(variables=[MetricVariable, ConfigVariable])
 
 
 for index, expr in enumerate(expressions):
-    print(f'expr: {parser.test(expr)}')
-    result = eval(parser.compile(expr))
+    print(f'Expr {index}\t\tSource expr: "{expr}"\t\tFinal expr: "{parser.test(expr)}"')
+    result = parser.compile(expr)(source=source_frame, config=result_data)
+
     result_df[index] = result
 
-print(result_df)
+
+print(f'Final result:\n{result_df}')

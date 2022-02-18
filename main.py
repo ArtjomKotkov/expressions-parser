@@ -227,4 +227,8 @@ class Parser:
 
         code = compile(tree, "<string>", "eval")
 
-        return code
+        def evaluate(**kwargs):
+            return eval(code, kwargs)
+
+        return evaluate
+
