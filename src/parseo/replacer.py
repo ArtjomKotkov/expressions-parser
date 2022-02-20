@@ -1,5 +1,5 @@
 import ast
-from typing import Any, Iterable, Optional, Type, Callable
+from typing import Any, Iterable, Optional, Type, Callable, Union
 
 from .expressions import AbstractVariable, AbstractAttributedVariable
 from .exceptions import (
@@ -13,7 +13,9 @@ class NodeReplacer(ast.NodeTransformer):
     def __init__(
         self,
         functions: Optional[Iterable[Callable]],
-        variables: Optional[Iterable[Type[AbstractVariable] | Type[AbstractAttributedVariable]]],
+        variables: Optional[
+            Iterable[Union[Type[AbstractVariable], Type[AbstractAttributedVariable]]]
+        ],
         *args,
         **kwargs
     ):

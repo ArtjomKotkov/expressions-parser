@@ -1,5 +1,6 @@
 import ast
 import re
+from typing import Iterable
 
 import pandas as pd
 
@@ -17,15 +18,9 @@ class MetricVariable(AbstractVariable):
     context: str = 'source'
 
     @classmethod
-    def value_getter_link(cls, node: ast.Name):
-        matches = cls._get_mask_matches(node.id)
-
-        index = f'{matches[0]}'
-        getter_string = f'{cls.context}[{index}]'  # Указываем текстовую ссылку на дата фрейм с данными.
-
-        getter_tree = ast.parse(getter_string, mode='eval')  # Преобразуем в дерево.
-
-        return getter_tree.body
+    def value_getter_str(cls, node: ast.Name, name_matches: Iterable[str]):
+        index = f'{name_matches[0]}'
+        return f'{cls.context}[{index}]'  # Указываем текстовую ссылку на дата фрейм с данными.
 
 
 class ConfigVariable(AbstractVariable):
@@ -38,15 +33,9 @@ class ConfigVariable(AbstractVariable):
     context: str = 'config_list'
 
     @classmethod
-    def value_getter_link(cls, node: ast.Name):
-        matches = cls._get_mask_matches(node.id)
-
-        index = f'{matches[0]}'
-        getter_string = f'{cls.context}[{index}]'  # Указываем текстовую ссылку на список с данными.
-
-        getter_tree = ast.parse(getter_string, mode='eval')  # Преобразуем в дерево.
-
-        return getter_tree.body
+    def value_getter_str(cls, node: ast.Name, name_matches: Iterable[str]):
+        index = f'{name_matches[0]}'
+        return f'{cls.context}[{index}]'  # Указываем текстовую ссылку на список с данными.
 
 
 class ConfigIdVariable(AbstractVariable):
@@ -59,15 +48,9 @@ class ConfigIdVariable(AbstractVariable):
     context: str = 'config_map'
 
     @classmethod
-    def value_getter_link(cls, node: ast.Name):
-        matches = cls._get_mask_matches(node.id)
-
-        index = f'{matches[0]}'
-        getter_string = f'{cls.context}.get("{index}")'  # Указываем текстовую ссылку на список с данными.
-
-        getter_tree = ast.parse(getter_string, mode='eval')  # Преобразуем в дерево.
-
-        return getter_tree.body
+    def value_getter_str(cls, node: ast.Name, name_matches: Iterable[str]):
+        index = f'{name_matches[0]}'
+        return f'{cls.context}.get("{index}")'  # Указываем текстовую ссылку на список с данными.
 
 
 class ConfigAttributedVariable(AbstractAttributedVariable):
@@ -75,14 +58,9 @@ class ConfigAttributedVariable(AbstractAttributedVariable):
     context: str = 'config_map'
 
     @classmethod
-    def value_getter_link(cls, node: ast.Attribute):
+    def value_getter_str(cls, node: ast.Attribute):
         attribute = node.attr
-
-        getter_string = f'{cls.context}.get("{attribute}")'  # Указываем текстовую ссылку на список с данными.
-
-        getter_tree = ast.parse(getter_string, mode='eval')  # Преобразуем в дерево.
-
-        return getter_tree.body
+        return f'{cls.context}.get("{attribute}")'  # Указываем текстовую ссылку на список с данными.
 
 
 config = {  # Словарик с данными конфига.

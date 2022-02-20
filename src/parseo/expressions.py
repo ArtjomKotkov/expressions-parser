@@ -1,12 +1,13 @@
 import ast
 import re
-from typing import List
-
+from typing import List, Iterable
 
 __all__ = [
     'AbstractVariable',
     'AbstractAttributedVariable',
 ]
+
+import astunparse
 
 
 class AbstractVariable:
@@ -17,14 +18,15 @@ class AbstractVariable:
     context: str
 
     @classmethod
-    def value_getter_link(cls, node: ast.Name):
+    def value_getter_str(cls, node: ast.Name, name_matches: Iterable[str]) -> str:
         """
         Геттер ссылки на нужные данные для переменной.
 
+        :param name_matches: Совпадения в имени ноды по маске переменной.
         :param node: Текущая нода.
-        :return: РАспаршенное дерево представления данных. ast.patse('list[0]')
+        :return: Текстовое представление геттера данных из источника.
         """
-        return node
+        return astunparse.unparse(node)
 
     @classmethod
     def replace(cls, node: ast.Name):
@@ -34,7 +36,7 @@ class AbstractVariable:
         :param node: Текущая нода.
         :return:
         """
-        return cls.value_getter_link(node)
+        return cls._value_getter_tree(node)
 
     @classmethod
     def correspond(cls, node_name: str) -> bool:
@@ -45,6 +47,17 @@ class AbstractVariable:
         :return: true | false
         """
         return bool(cls.mask.fullmatch(node_name))
+
+    @classmethod
+    def _value_getter_tree(cls, node: ast.Name):
+        matches = cls._get_mask_matches(node.id)
+
+        getter_tree = ast.parse(  # Преобразуем в дерево.
+            cls.value_getter_str(node, matches),
+            mode='eval',
+        )
+
+        return getter_tree.body
 
     @classmethod
     def _get_mask_matches(cls, node_name: str) -> List[str]:
@@ -64,25 +77,24 @@ class AbstractAttributedVariable:
     context: str
 
     @classmethod
-    def value_getter_link(cls, node: ast.Name):
+    def value_getter_str(cls, node: ast.Attribute) -> str:
         """
         Геттер ссылки на нужные данные для переменной.
 
         :param node: Текущая нода.
-        :return: Распаршенное дерево представления данных. ast.patse('list[0]')
+        :return: Текстовое представление геттера данных из источника.
         """
-        return node
+        return astunparse.unparse(node)
 
     @classmethod
-    def replace(cls, node: ast.Name):
+    def replace(cls, node: ast.Attribute):
         """
         Метод подмены ноды.
 
         :param node: Текущая нода.
         :return:
         """
-
-        return ast.copy_location(cls.value_getter_link(node), node)
+        return cls._value_getter_tree(node)
 
     @classmethod
     def correspond(cls, node_name: str) -> bool:
@@ -93,3 +105,12 @@ class AbstractAttributedVariable:
         :return: true | false
         """
         return cls.name == node_name
+
+    @classmethod
+    def _value_getter_tree(cls, node: ast.Attribute):
+        getter_tree = ast.parse(  # Преобразуем в дерево.
+            cls.value_getter_str(node),
+            mode='eval',
+        )
+
+        return getter_tree.body

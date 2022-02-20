@@ -1,5 +1,5 @@
 import ast
-from typing import Optional, Iterable, Callable, Type, Mapping
+from typing import Optional, Iterable, Callable, Type, Mapping, Union
 
 import astunparse
 
@@ -18,7 +18,7 @@ class Parseo:
         self,
         functions: Optional[Iterable[Callable]] = None,
         variables: Optional[
-            Iterable[Type[AbstractVariable] | Type[AbstractAttributedVariable]]
+            Iterable[Union[Type[AbstractVariable], Type[AbstractAttributedVariable]]]
         ] = None,
     ):
         self._functions = functions
